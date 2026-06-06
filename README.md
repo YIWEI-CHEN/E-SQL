@@ -120,6 +120,20 @@ The native Dataverse T-SQL work starts with a connectivity proof only. The Pytho
 
 Passing this smoke test only proves Dataverse access is wired correctly. It does not run the E-SQL pipeline end-to-end yet.
 
+### Dataverse P2 soccer schema cache
+
+After P1 access works for the soccer environment, pull the Dataverse TDS schema cache and prompt-rendered schema:
+
+```powershell
+uv run --with-requirements requirements.txt python scripts\pull_dataverse_schema.py --db-id soccer
+```
+
+This writes:
+- `dataverse\schema_cache\soccer.json`
+- `dataverse\schema_cache\soccer.schema.sql`
+
+P2 is currently scoped to the soccer dataset only.
+
 
 ## Running the Code
 1. **Update the `run_main.sh` file for running mode or OpenAI model change:** In `run_main.sh` file set the mode and model argument. Do not change the other arguments in the `run_main.sh`.

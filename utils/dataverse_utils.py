@@ -120,6 +120,15 @@ def execute_sql_dataverse(
     raise ValueError("Invalid fetch argument. Must be 'all', 'one', or an integer.")
 
 
+def execute_sql_dataverse_records(
+    db_id: str,
+    sql: str,
+    timeout_seconds: Optional[int] = 30,
+) -> list[dict[str, Any]]:
+    """Execute Dataverse TDS SQL and return rows as dictionaries."""
+    return _invoke_sqlcmd(db_id, sql, timeout_seconds=timeout_seconds)
+
+
 def _normalize_value(value: Any) -> Any:
     if isinstance(value, Decimal):
         return round(float(value), 8)
