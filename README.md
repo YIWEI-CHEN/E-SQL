@@ -95,6 +95,31 @@ hint: you can generate column_meaning.json for dev and val dataset from TA-SQL: 
     pip install -r requirements.txt
     ```
 
+### Dataverse P1 connectivity smoke test
+
+The native Dataverse T-SQL work starts with a connectivity proof only. The Python SDK is used for auth and simple reads, while full SQL execution still uses the Dataverse TDS endpoint through `Invoke-Sqlcmd` because SDK SQL does not support joins, grouping, distinct, subqueries, or full result-set comparison.
+
+1. Install the Python dependencies above and ensure Azure CLI plus the PowerShell **SqlServer** module are available.
+2. Add Dataverse environment URLs to `.env`:
+    ```
+    DATAVERSE_ENV_SOCCER=https://<soccer-org>.crm.dynamics.com
+    DATAVERSE_ENV_CALIFORNIA_SCHOOLS=https://<california-schools-org>.crm.dynamics.com
+    DATAVERSE_ENV_STUDENT_CLUB=https://<student-club-org>.crm.dynamics.com
+    DATAVERSE_TENANT_ID=<your-tenant-id>
+    DATAVERSE_AUTH_MODE=auto
+    ```
+    If Azure CLI is logged into the wrong tenant, set `DATAVERSE_AUTH_MODE=browser`
+    or `DATAVERSE_AUTH_MODE=device_code`.
+3. Run the SDK + TDS smoke script with one known table per dataset:
+    ```powershell
+    uv run --with-requirements requirements.txt python scripts\smoke_dataverse_access.py `
+      --table soccer=<table_name> `
+      --table california_schools=<table_name> `
+      --table student_club=<table_name>
+    ```
+
+Passing this smoke test only proves Dataverse access is wired correctly. It does not run the E-SQL pipeline end-to-end yet.
+
 
 ## Running the Code
 1. **Update the `run_main.sh` file for running mode or OpenAI model change:** In `run_main.sh` file set the mode and model argument. Do not change the other arguments in the `run_main.sh`.

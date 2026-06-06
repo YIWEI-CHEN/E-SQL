@@ -65,13 +65,39 @@ and pass it through.
 
 ---
 
-## 2. Connector — `utils/dataverse_utils.py`
+## 2. Dataverse access layer — SDK + TDS
 
-1. AAD token via the existing `ChainedTokenCredential` chain (Azure CLI →
-   Interactive Browser), scope `https://<org>.crm.dynamics.com/.default`.
-2. `pyodbc` + ODBC Driver 18 for SQL Server. TDS endpoint at
-   `<org>.crm.dynamics.com,5558`, token injected via `SQL_COPT_SS_ACCESS_TOKEN`
-   (attr 1256). `Encrypt=yes;TrustServerCertificate=no`.
+The Microsoft `Dataverse-skills` repo confirms that the Python SDK
+(`PowerPlatform-Dataverse-Client`) is useful for authentication, metadata,
+simple reads, DataFrame extraction, and Web API helpers. It **does not replace
+TDS for E-SQL execution accuracy**, because `client.query.sql()` uses the
+Dataverse Web API `?sql=` parameter and does not support key SQL constructs we
+need for BIRD-style EX scoring: `JOIN`, `GROUP BY`, `HAVING`, `DISTINCT`,
+subqueries, and large result sets beyond ~5,000 rows.
+
+Therefore the access layer is split deliberately:
+
+### 2.1 SDK helper — `utils/dataverse_sdk.py`
+
+1. Reuse the auth pattern from `Dataverse-skills/scripts/auth.py`:
+   service principal when `CLIENT_ID` + `CLIENT_SECRET` are present, otherwise
+   device-code auth with a persistent token cache.
+2. Return a `DataverseClient` via `PowerPlatform.Dataverse.client.DataverseClient`
+   for SDK-based operations.
+3. Use SDK paths for:
+   - connectivity smoke tests (`client.records.get(...)` or simple
+     `client.query.sql("SELECT TOP 1 ...")`)
+   - metadata/schema discovery when the SDK supports it
+   - simple table reads and DataFrame extraction
+   - prompt sample extraction where full SQL semantics are not needed
+
+### 2.2 TDS SQL executor — `utils/dataverse_utils.py`
+
+1. AAD token via Azure CLI (`az account get-access-token --resource https://<org>`),
+   matching the proven `dv-sql` skill path.
+2. PowerShell `Invoke-Sqlcmd` against the Dataverse TDS endpoint
+   (`<org>.crm.dynamics.com`). This avoids pyodbc token-auth edge cases while
+   still exercising the same read-only TDS endpoint.
 3. Per-`db_id` env routing via env vars:
    - `DATAVERSE_ENV_SOCCER`
    - `DATAVERSE_ENV_CALIFORNIA_SCHOOLS`
@@ -289,6 +315,8 @@ in-process EX in `metrics.json` is sufficient.
 **New**
 
 - `utils/engine_config.py` — `EngineConfig` dataclass + factory
+- `utils/dataverse_sdk.py` — SDK auth helper, `DataverseClient` factory,
+  simple read/smoke utilities
 - `utils/dataverse_utils.py` — connector, execute, compare
 - `utils/dataverse_schema.py` — Web API metadata pull + T-SQL CREATE TABLE
   renderer + cache loader
@@ -315,8 +343,8 @@ in-process EX in `metrics.json` is sufficient.
 - `pipeline/Pipeline.py` — accept `engine`; replace all `db_path` plumbing
 - `main.py`, `main_azure_dev_db.py`, `main_azure_soccer.py` — add
   `--exec_engine`, build `EngineConfig`, route `check_correctness`
-- `requirements.txt` — `pyodbc>=5`, pinned `azure-identity`, optional
-  `requests` for metadata pulls
+- `requirements.txt` — pinned `azure-identity`, `PowerPlatform-Dataverse-Client`,
+  `pandas`, optional `requests` for metadata pulls / Web API fallbacks
 - `env.example`, `README.md`
 
 **Deferred unless needed**
@@ -332,7 +360,7 @@ Five PRs so we can stop or pivot at any boundary:
 
 | Phase | Deliverable | Validates |
 |---|---|---|
-| P1 | `dataverse_utils.py` connector + `SELECT TOP 1 …` smoke per db | TDS auth + 3 envs reachable |
+| P1 | Dataverse access proof: SDK auth/simple-read smoke + TDS `SELECT TOP 1 …` smoke per db | SDK setup works; TDS auth works; all 3 envs reachable |
 | P2 | `pull_dataverse_schema.py`, schema cache, `dataverse_schema.py` renderer | Schema strings correct & token-economical |
 | P3 | `translate_gold_for_dataverse.py` produces gold caches; hand-patch failures | Establishes the **EX ceiling** |
 | P4 | `EngineConfig`, new prompts, system messages, bootstrapped few-shot pool, `Pipeline.py` plumbing | End-to-end on 10 questions / db; compare against series-1 |
@@ -340,7 +368,14 @@ Five PRs so we can stop or pivot at any boundary:
 
 Hard validation gates:
 
-- After P1: `python -c "from utils.dataverse_utils import execute_sql_dataverse; print(execute_sql_dataverse('soccer','SELECT TOP 1 [name] FROM [team]'))"` succeeds for all 3 dbs.
+- After P1:
+  - SDK smoke succeeds for all 3 dbs using `PowerPlatform-Dataverse-Client`
+    (`client.records.get(...)` or a limited `client.query.sql("SELECT TOP 1 ...")`).
+  - TDS smoke succeeds for all 3 dbs, e.g.
+    `python -c "from utils.dataverse_utils import execute_sql_dataverse; print(execute_sql_dataverse('soccer','SELECT TOP 1 [name] FROM [team]'))"`.
+  - Document explicitly that SDK SQL is **not** the EX execution backend; TDS
+    remains required for joins, grouping, distinct, subqueries, and full result
+    comparison.
 - After P3: report `gold_ok_count / total` per db. If <90%, fix the
   translator before authoring new prompts/few-shots.
 - After P4: take 10 questions where series-1 scored EX=1, verify the new

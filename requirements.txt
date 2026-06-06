@@ -1,5 +1,6 @@
 argparse
 python-dotenv==1.0.1
+azure-identity>=1.16.0
 sqlglot==25.7.1
 rank-bm25==0.2.2
 nltk
@@ -7,5 +8,6 @@ func_timeout==4.3.5
 openai==1.37.1
 numpy
 pandas
+PowerPlatform-Dataverse-Client>=0.1.0b9
 sentencepiece  
 psycopg2-binary
