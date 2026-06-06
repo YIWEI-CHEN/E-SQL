@@ -1,0 +1,26 @@
+### Generate Dataverse T-SQL
+
+You are given a natural language question, optional evidence, the Dataverse TDS schema, and optional examples. Write one valid read-only Dataverse T-SQL query that answers the question.
+
+### Dataverse SQL rules
+- Use square brackets for table and column identifiers, e.g. [bird_soccer_team].
+- Use Dataverse table and column names exactly as shown in the schema.
+- Use SELECT TOP n with ORDER BY for top-N queries; do not use LIMIT.
+- Use DATEPART, DATEADD, DATEDIFF, or CONVERT for date logic; do not use SUBSTR, strftime, date(), or julianday().
+- Use explicit JOIN ... ON clauses; do not use NATURAL JOIN or USING.
+- Use + or CONCAT for string concatenation; do not use ||.
+- Use STRING_AGG instead of GROUP_CONCAT.
+- Dataverse TDS is read-only: never generate INSERT, UPDATE, DELETE, MERGE, DDL, temp tables, stored procedures, or CTEs.
+- For aggregate queries, include every non-aggregated selected column in GROUP BY.
+- Prefer the integer mirror columns shown in the schema when they preserve the source benchmark semantics.
+- Return only a JSON object.
+
+{FEWSHOT_EXAMPLES}
+{SCHEMA}
+{DB_DESCRIPTIONS}
+{DB_SAMPLES}
+{QUESTION}
+{EVIDENCE}
+
+### Response JSON shape
+```json{{"chain_of_thought_reasoning": "Brief reasoning for the Dataverse T-SQL query.", "SQL": "Generated Dataverse T-SQL query as a single string"}}```

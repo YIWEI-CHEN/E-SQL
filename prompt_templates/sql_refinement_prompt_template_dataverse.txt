@@ -1,0 +1,24 @@
+### Refine Dataverse T-SQL
+
+You are given a question, Dataverse TDS schema, optional evidence, a possible Dataverse T-SQL query, and the execution error from Dataverse TDS if the possible query failed. Produce one corrected read-only Dataverse T-SQL query.
+
+### Dataverse SQL repair rules
+- Keep identifiers in square brackets and use exact table/column names from the schema.
+- Replace SQLite syntax: LIMIT -> SELECT TOP, backticks -> square brackets, SUBSTR/strftime -> DATEPART or CONVERT, GROUP_CONCAT -> STRING_AGG.
+- Dataverse TDS does not support CTEs, DML, temp tables, stored procedures, or DDL.
+- If an error says a selected column is not in GROUP BY, add that selected non-aggregated column to GROUP BY.
+- If an aggregate contains a scalar subquery, rewrite it as a JOIN or CROSS JOIN.
+- If CASE returns text in one branch and 0 in another, use NULL instead of 0 for the text branch.
+- Return only a JSON object.
+
+{FEWSHOT_EXAMPLES}
+{SCHEMA}
+{DB_DESCRIPTIONS}
+{QUESTION}
+{EVIDENCE}
+{POSSIBLE_CONDITIONS}
+{POSSIBLE_SQL_Query}
+{EXECUTION_ERROR}
+
+### Response JSON shape
+```json{{"chain_of_thought_reasoning": "Brief reasoning for the corrected Dataverse T-SQL query.", "SQL": "Final Dataverse T-SQL query as a single string"}}```

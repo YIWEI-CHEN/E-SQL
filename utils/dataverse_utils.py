@@ -19,7 +19,7 @@ from typing import Any, Dict, Optional, Union
 
 from dotenv import load_dotenv
 
-from utils.dataverse_sdk import get_dataverse_host
+from utils.dataverse_sdk import get_access_token, get_dataverse_host
 
 
 def _ps_single_quoted(value: str) -> str:
@@ -31,29 +31,38 @@ def _invoke_sqlcmd(db_id: str, sql: str, timeout_seconds: Optional[int] = 30) ->
     load_dotenv()
 
     resource = os.environ.get("DATAVERSE_TDS_RESOURCE", f"https://{host}")
-    az_exe = shutil.which("az") or shutil.which("az.cmd")
-    if not az_exe:
-        raise RuntimeError("Azure CLI executable was not found on PATH")
-    token_cmd = [
-        az_exe,
-        "account",
-        "get-access-token",
-        "--resource",
-        resource,
-        "--query",
-        "accessToken",
-        "-o",
-        "tsv",
-    ]
-    token_result = subprocess.run(token_cmd, capture_output=True, text=True, check=False)
-    if token_result.returncode != 0:
-        raise RuntimeError(
-            "Failed to get Azure CLI access token. Run az login for the Dataverse tenant. "
-            f"stderr: {token_result.stderr.strip()}"
-        )
-    token = token_result.stdout.strip()
-    if not token:
-        raise RuntimeError("Azure CLI returned an empty Dataverse access token")
+    token_source = os.environ.get("DATAVERSE_TDS_TOKEN_SOURCE", "sdk").lower()
+    if token_source == "sdk":
+        token = get_access_token(db_id, scope=f"{resource.rstrip('/')}/.default")
+    elif token_source == "az":
+        az_exe = shutil.which("az") or shutil.which("az.cmd")
+        if not az_exe:
+            raise RuntimeError("Azure CLI executable was not found on PATH")
+        token_cmd = [
+            az_exe,
+            "account",
+            "get-access-token",
+            "--resource",
+            resource,
+            "--query",
+            "accessToken",
+            "-o",
+            "tsv",
+        ]
+        dataverse_tenant_id = os.environ.get("DATAVERSE_TENANT_ID") or os.environ.get("TENANT_ID")
+        if dataverse_tenant_id:
+            token_cmd.extend(["--tenant", dataverse_tenant_id])
+        token_result = subprocess.run(token_cmd, capture_output=True, text=True, check=False)
+        if token_result.returncode != 0:
+            raise RuntimeError(
+                "Failed to get Azure CLI access token. Run az login for the Dataverse tenant. "
+                f"stderr: {token_result.stderr.strip()}"
+            )
+        token = token_result.stdout.strip()
+        if not token:
+            raise RuntimeError("Azure CLI returned an empty Dataverse access token")
+    else:
+        raise ValueError("DATAVERSE_TDS_TOKEN_SOURCE must be either sdk or az")
 
     query_timeout_arg = ""
     if timeout_seconds:

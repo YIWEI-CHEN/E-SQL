@@ -107,6 +107,7 @@ The native Dataverse T-SQL work starts with a connectivity proof only. The Pytho
     DATAVERSE_ENV_STUDENT_CLUB=https://<student-club-org>.crm.dynamics.com
     DATAVERSE_TENANT_ID=<your-tenant-id>
     DATAVERSE_AUTH_MODE=auto
+    DATAVERSE_TDS_TOKEN_SOURCE=sdk
     ```
     If Azure CLI is logged into the wrong tenant, set `DATAVERSE_AUTH_MODE=browser`
     or `DATAVERSE_AUTH_MODE=device_code`.
@@ -133,6 +134,30 @@ This writes:
 - `dataverse\schema_cache\soccer.schema.sql`
 
 P2 is currently scoped to the soccer dataset only.
+
+### Dataverse P4 soccer native-generation smoke
+
+After P1-P3 are complete for soccer, run a Dataverse-native generation smoke test:
+
+```powershell
+uv run --with-requirements requirements.txt python scripts\run_dataverse_soccer_e2e.py `
+  --model <azure-openai-deployment-name> `
+  --limit 5 `
+  --bird-train-root C:\path\to\bird_train\train
+```
+
+P4 uses Azure OpenAI with Entra auth only; it does not use `OPENAI_API_KEY`. Configure:
+```text
+AZURE_OPENAI_ENDPOINT=https://<azure-openai-resource>.openai.azure.com/
+AZURE_OPENAI_API_VERSION=2024-10-21
+AZURE_TENANT_ID=<azure-openai-tenant-id>
+```
+
+If Azure OpenAI and Dataverse use different tenants, keep
+`DATAVERSE_TDS_TOKEN_SOURCE=sdk` so Dataverse TDS gets its token from the SDK
+credential instead of the active Azure CLI account.
+
+Use `--dry-run` to build prompts and output files without calling the LLM.
 
 
 ## Running the Code
