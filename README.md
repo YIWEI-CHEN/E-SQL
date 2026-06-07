@@ -95,6 +95,18 @@ hint: you can generate column_meaning.json for dev and val dataset from TA-SQL: 
     pip install -r requirements.txt
     ```
 
+## Execution accuracy summary
+
+The table below summarizes the current execution-accuracy results for the three experiment datasets on the original SQLite backend and the Dataverse-native T-SQL backend.
+
+| Dataset | SQLite EX | Dataverse-native EX | Notes |
+|---|---:|---:|---|
+| `california_schools` | 55 / 89 = **61.80%** | Not run yet | SQLite baseline completed; Dataverse-native run still pending. |
+| `soccer_2016` | 175 / 256 = **68.36%** | 160 / 258 = **62.02%** | Dataverse gold SQL ceiling is 258 / 258 = **100.00%**. |
+| `student_club` | 121 / 158 = **76.58%** | Not run yet | SQLite baseline completed; Dataverse-native run still pending. |
+
+The Dataverse-native path uses Azure OpenAI with Entra auth for SQL generation. It does not use `OPENAI_API_KEY` for the P4/P5 Dataverse-native experiments.
+
 ### Dataverse P1 connectivity smoke test
 
 The native Dataverse T-SQL work starts with a connectivity proof only. The Python SDK is used for auth and simple reads, while full SQL execution still uses the Dataverse TDS endpoint through `Invoke-Sqlcmd` because SDK SQL does not support joins, grouping, distinct, subqueries, or full result-set comparison.
