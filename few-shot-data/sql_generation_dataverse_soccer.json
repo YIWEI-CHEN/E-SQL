@@ -1,0 +1,437 @@
+[
+  {
+    "question_id": 0,
+    "source_index": 1787,
+    "question": "How many players were born after the year 1985?",
+    "sqlite_sql": "SELECT COUNT(Player_Id) FROM Player WHERE SUBSTR(DOB, 1, 4) > 1985",
+    "dataverse_sql": "SELECT COUNT([bird_soccer_player_id]) FROM [bird_soccer_player] WHERE DATEPART(year, [bird_soccer_dob]) > 1985",
+    "patterns": [
+      "date"
+    ]
+  },
+  {
+    "question_id": 1,
+    "source_index": 1788,
+    "question": "How many matches were there in May, 2008?",
+    "sqlite_sql": "SELECT COUNT(Match_Id) FROM `Match` WHERE SUBSTR(Match_Date, 1, 4) = '2008' AND SUBSTR(Match_Date, 7, 1) = '5'",
+    "dataverse_sql": "SELECT COUNT([bird_soccer_match_id]) FROM [bird_soccer_match] WHERE DATEPART(year, [bird_soccer_match_date]) = '2008' AND DATEPART(month, [bird_soccer_match_date]) = '5'",
+    "patterns": [
+      "date"
+    ]
+  },
+  {
+    "question_id": 2,
+    "source_index": 1789,
+    "question": "For how many times has player no.41 won the \"man of the match\" award?",
+    "sqlite_sql": "SELECT COUNT(Match_Id) FROM `Match` WHERE Man_of_the_Match = 41",
+    "dataverse_sql": "SELECT COUNT([bird_soccer_match_id]) FROM [bird_soccer_match] WHERE [bird_soccer_man_of_the_match] = 41",
+    "patterns": [
+      "simple"
+    ]
+  },
+  {
+    "question_id": 3,
+    "source_index": 1790,
+    "question": "Please list the IDs of all the matches in the year 2008.",
+    "sqlite_sql": "SELECT Match_Id FROM `Match` WHERE SUBSTR(Match_Date, 1, 4) = '2008'",
+    "dataverse_sql": "SELECT [bird_soccer_match_id] FROM [bird_soccer_match] WHERE DATEPART(year, [bird_soccer_match_date]) = '2008'",
+    "patterns": [
+      "date"
+    ]
+  },
+  {
+    "question_id": 4,
+    "source_index": 1791,
+    "question": "How many players are from Australia?",
+    "sqlite_sql": "SELECT COUNT(CASE WHEN T2.Country_Name = 'Australia' THEN T1.Player_Id ELSE NULL END) FROM Player AS T1 INNER JOIN Country AS T2 ON T1.Country_Name = T2.Country_Id",
+    "dataverse_sql": "SELECT COUNT(CASE WHEN [T2].[bird_soccer_country_name] = 'Australia' THEN [T1].[bird_soccer_player_id] ELSE NULL END) FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_country] AS [T2] ON [T1].[bird_soccer_country_name] = [T2].[bird_soccer_country_id]",
+    "patterns": [
+      "join",
+      "case"
+    ]
+  },
+  {
+    "question_id": 5,
+    "source_index": 1792,
+    "question": "Which country is the oldest player from?",
+    "sqlite_sql": "SELECT T1.Country_Name FROM Country AS T1 INNER JOIN Player AS T2 ON T2.Country_Name = T1.Country_Id WHERE T2.Country_Name IS NOT NULL ORDER BY T2.DOB LIMIT 1",
+    "dataverse_sql": "SELECT TOP 1 [T1].[bird_soccer_country_name] FROM [bird_soccer_country] AS [T1] INNER JOIN [bird_soccer_player] AS [T2] ON [T2].[bird_soccer_country_name] = [T1].[bird_soccer_country_id] WHERE NOT [T2].[bird_soccer_country_name] IS NULL ORDER BY [T2].[bird_soccer_dob]",
+    "patterns": [
+      "join",
+      "top",
+      "subquery"
+    ]
+  },
+  {
+    "question_id": 6,
+    "source_index": 1793,
+    "question": "What is the bowling skill of SC Ganguly?",
+    "sqlite_sql": "SELECT T1.Bowling_Skill FROM Bowling_Style AS T1 INNER JOIN Player AS T2 ON T2.Bowling_skill = T1.Bowling_Id WHERE T2.Player_Name = 'SC Ganguly'",
+    "dataverse_sql": "SELECT [T1].[bird_soccer_bowling_skill] FROM [bird_soccer_bowling_style] AS [T1] INNER JOIN [bird_soccer_player] AS [T2] ON [T2].[bird_soccer_bowling_skill] = [T1].[bird_soccer_bowling_id] WHERE [T2].[bird_soccer_player_name] = 'SC Ganguly'",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 7,
+    "source_index": 1794,
+    "question": "Among the players who use the right hand as their batting hand, how many of them were born after 1985?",
+    "sqlite_sql": "SELECT SUM(CASE WHEN SUBSTR(T1.DOB, 1, 4) > 1985 THEN 1 ELSE 0 END) FROM Player AS T1 INNER JOIN Batting_Style AS T2 ON T1.Batting_hand = T2.Batting_Id WHERE T2.Batting_Hand = 'Right-hand bat'",
+    "dataverse_sql": "SELECT SUM(CASE WHEN DATEPART(year, [T1].[bird_soccer_dob]) > 1985 THEN 1 ELSE 0 END) FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_batting_style] AS [T2] ON [T1].[bird_soccer_batting_hand] = [T2].[bird_soccer_batting_id] WHERE [T2].[bird_soccer_batting_hand] = 'Right-hand bat'",
+    "patterns": [
+      "join",
+      "date",
+      "case",
+      "aggregate"
+    ]
+  },
+  {
+    "question_id": 8,
+    "source_index": 1795,
+    "question": "Please list the names of the players who use the right hand as their batting hand and are from Australia.",
+    "sqlite_sql": "SELECT T2.Player_Name FROM Country AS T1 INNER JOIN Player AS T2 ON T2.Country_Name = T1.Country_id INNER JOIN Batting_Style AS T3 ON T2.Batting_hand = T3.Batting_Id WHERE T1.Country_Name = 'Australia' AND T3.Batting_Hand = 'Right-hand bat'",
+    "dataverse_sql": "SELECT [T2].[bird_soccer_player_name] FROM [bird_soccer_country] AS [T1] INNER JOIN [bird_soccer_player] AS [T2] ON [T2].[bird_soccer_country_name] = [T1].[bird_soccer_country_id] INNER JOIN [bird_soccer_batting_style] AS [T3] ON [T2].[bird_soccer_batting_hand] = [T3].[bird_soccer_batting_id] WHERE [T1].[bird_soccer_country_name] = 'Australia' AND [T3].[bird_soccer_batting_hand] = 'Right-hand bat'",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 9,
+    "source_index": 1796,
+    "question": "Please list the bowling skills of all the players from Australia.",
+    "sqlite_sql": "SELECT T2.Bowling_Skill FROM Player AS T1 INNER JOIN Bowling_Style AS T2 ON T1.Bowling_skill = T2.Bowling_Id INNER JOIN Country AS T3 ON T1.Country_Name = T3.Country_Id WHERE T3.Country_Name = 'Australia' GROUP BY T2.Bowling_Skill",
+    "dataverse_sql": "SELECT [T2].[bird_soccer_bowling_skill] FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_bowling_style] AS [T2] ON [T1].[bird_soccer_bowling_skill] = [T2].[bird_soccer_bowling_id] INNER JOIN [bird_soccer_country] AS [T3] ON [T1].[bird_soccer_country_name] = [T3].[bird_soccer_country_id] WHERE [T3].[bird_soccer_country_name] = 'Australia' GROUP BY [T2].[bird_soccer_bowling_skill]",
+    "patterns": [
+      "join",
+      "group_by"
+    ]
+  },
+  {
+    "question_id": 10,
+    "source_index": 1797,
+    "question": "Among the players whose bowling skill is \"Legbreak\", when was the oldest one of them born?",
+    "sqlite_sql": "SELECT MIN(T1.DOB) FROM Player AS T1 INNER JOIN Bowling_Style AS T2 ON T1.Bowling_skill = T2.Bowling_Id WHERE T2.Bowling_Skill = 'Legbreak'",
+    "dataverse_sql": "SELECT MIN([T1].[bird_soccer_dob]) FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_bowling_style] AS [T2] ON [T1].[bird_soccer_bowling_skill] = [T2].[bird_soccer_bowling_id] WHERE [T2].[bird_soccer_bowling_skill] = 'Legbreak'",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 11,
+    "source_index": 1798,
+    "question": "What is the bowling skill used by most players?",
+    "sqlite_sql": "SELECT T1.Bowling_Skill FROM Bowling_Style AS T1 INNER JOIN Player AS T2 ON T2.Bowling_skill = T1.Bowling_Id GROUP BY T1.Bowling_Skill ORDER BY COUNT(T1.Bowling_Skill) DESC LIMIT 1",
+    "dataverse_sql": "SELECT TOP 1 [T1].[bird_soccer_bowling_skill] FROM [bird_soccer_bowling_style] AS [T1] INNER JOIN [bird_soccer_player] AS [T2] ON [T2].[bird_soccer_bowling_skill] = [T1].[bird_soccer_bowling_id] GROUP BY [T1].[bird_soccer_bowling_skill] ORDER BY COUNT([T1].[bird_soccer_bowling_skill]) DESC",
+    "patterns": [
+      "join",
+      "group_by",
+      "top",
+      "subquery"
+    ]
+  },
+  {
+    "question_id": 12,
+    "source_index": 1799,
+    "question": "What is the name of the player who won the \"man of the match\" award in the match on 2008/4/18?",
+    "sqlite_sql": "SELECT T2.Player_Name FROM Match AS T1 INNER JOIN Player AS T2 ON T2.Player_Id = T1.Man_of_the_Match WHERE T1.Match_Date = '2008-04-18'",
+    "dataverse_sql": "SELECT [T2].[bird_soccer_player_name] FROM [bird_soccer_match] AS [T1] INNER JOIN [bird_soccer_player] AS [T2] ON [T2].[bird_soccer_player_id] = [T1].[bird_soccer_man_of_the_match] WHERE [T1].[bird_soccer_match_date] = '2008-04-18'",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 13,
+    "source_index": 1800,
+    "question": "For how many times has SC Ganguly played as team captain in a match?",
+    "sqlite_sql": "SELECT SUM(CASE WHEN T3.Role_Desc = 'Captain' THEN 1 ELSE 0 END) FROM Player AS T1 INNER JOIN Player_Match AS T2 ON T1.Player_Id = T2.Player_Id INNER JOIN Rolee AS T3 ON T2.Role_Id = T3.Role_Id WHERE T1.Player_Name = 'SC Ganguly'",
+    "dataverse_sql": "SELECT SUM(CASE WHEN [T3].[bird_soccer_role_desc] = 'Captain' THEN 1 ELSE 0 END) FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_player_match] AS [T2] ON [T1].[bird_soccer_player_id] = [T2].[bird_soccer_player_id] INNER JOIN [bird_soccer_rolee] AS [T3] ON [T2].[bird_soccer_role_id] = [T3].[bird_soccer_role_id] WHERE [T1].[bird_soccer_player_name] = 'SC Ganguly'",
+    "patterns": [
+      "join",
+      "case",
+      "aggregate"
+    ]
+  },
+  {
+    "question_id": 14,
+    "source_index": 1801,
+    "question": "What is the role of SC Ganguly in the match on 2008/4/18?",
+    "sqlite_sql": "SELECT T2.Role_Id FROM Player AS T1 INNER JOIN Player_Match AS T2 ON T1.Player_Id = T2.Player_Id INNER JOIN Rolee AS T3 ON T2.Role_Id = T3.Role_Id INNER JOIN Match AS T4 ON T2.Match_Id = T4.Match_Id WHERE T1.Player_Name = 'SC Ganguly' AND T4.Match_Date = '2008-04-18'",
+    "dataverse_sql": "SELECT [T2].[bird_soccer_role_id] FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_player_match] AS [T2] ON [T1].[bird_soccer_player_id] = [T2].[bird_soccer_player_id] INNER JOIN [bird_soccer_rolee] AS [T3] ON [T2].[bird_soccer_role_id] = [T3].[bird_soccer_role_id] INNER JOIN [bird_soccer_match] AS [T4] ON [T2].[bird_soccer_match_id] = [T4].[bird_soccer_match_id] WHERE [T1].[bird_soccer_player_name] = 'SC Ganguly' AND [T4].[bird_soccer_match_date] = '2008-04-18'",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 15,
+    "source_index": 1802,
+    "question": "Among all the matches SC Ganguly has played in, what is the highest winning margin?",
+    "sqlite_sql": "SELECT MAX(T3.Win_Margin) FROM Player AS T1 INNER JOIN Player_Match AS T2 ON T1.Player_Id = T2.Player_Id INNER JOIN Match AS T3 ON T2.Match_Id = T3.Match_Id WHERE T1.Player_Name = 'SC Ganguly'",
+    "dataverse_sql": "SELECT MAX([T3].[bird_soccer_win_margin]) FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_player_match] AS [T2] ON [T1].[bird_soccer_player_id] = [T2].[bird_soccer_player_id] INNER JOIN [bird_soccer_match] AS [T3] ON [T2].[bird_soccer_match_id] = [T3].[bird_soccer_match_id] WHERE [T1].[bird_soccer_player_name] = 'SC Ganguly'",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 16,
+    "source_index": 1803,
+    "question": "What is the average winning margin of all the matches SC Ganguly has played in?",
+    "sqlite_sql": "SELECT CAST(SUM(T3.Win_Margin) AS REAL) / COUNT(*) FROM Player AS T1 INNER JOIN Player_Match AS T2 ON T1.Player_Id = T2.Player_Id INNER JOIN Match AS T3 ON T2.Match_Id = T3.Match_Id WHERE T1.Player_Name = 'SC Ganguly'",
+    "dataverse_sql": "SELECT CAST(SUM([T3].[bird_soccer_win_margin]) AS FLOAT) / NULLIF(COUNT(*), 0) FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_player_match] AS [T2] ON [T1].[bird_soccer_player_id] = [T2].[bird_soccer_player_id] INNER JOIN [bird_soccer_match] AS [T3] ON [T2].[bird_soccer_match_id] = [T3].[bird_soccer_match_id] WHERE [T1].[bird_soccer_player_name] = 'SC Ganguly'",
+    "patterns": [
+      "join",
+      "aggregate"
+    ]
+  },
+  {
+    "question_id": 17,
+    "source_index": 1804,
+    "question": "Among all the players born after the year 1985, what is the percentage of the players who use the right hand as their batting hand?",
+    "sqlite_sql": "SELECT CAST(SUM(CASE WHEN T2.Batting_Hand = 'Right-hand bat' THEN 1 ELSE 0 END) AS REAL) * 100 / COUNT(T1.Player_Id) FROM Player AS T1 INNER JOIN Batting_Style AS T2 ON T1.Batting_hand = T2.Batting_Id WHERE SUBSTR(T1.DOB, 1, 4) > 1985",
+    "dataverse_sql": "SELECT CAST(SUM(CASE WHEN [T2].[bird_soccer_batting_hand] = 'Right-hand bat' THEN 1 ELSE 0 END) AS FLOAT) * 100 / NULLIF(COUNT([T1].[bird_soccer_player_id]), 0) FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_batting_style] AS [T2] ON [T1].[bird_soccer_batting_hand] = [T2].[bird_soccer_batting_id] WHERE DATEPART(year, [T1].[bird_soccer_dob]) > 1985",
+    "patterns": [
+      "join",
+      "date",
+      "case",
+      "aggregate"
+    ]
+  },
+  {
+    "question_id": 18,
+    "source_index": 1805,
+    "question": "Give the name of the youngest player.",
+    "sqlite_sql": "SELECT Player_Name FROM Player ORDER BY DOB DESC LIMIT 1",
+    "dataverse_sql": "SELECT TOP 1 [bird_soccer_player_name] FROM [bird_soccer_player] ORDER BY [bird_soccer_dob] DESC",
+    "patterns": [
+      "top",
+      "subquery"
+    ]
+  },
+  {
+    "question_id": 19,
+    "source_index": 1806,
+    "question": "How many times has Sunrisers Hyderabad been the toss winner of a game?",
+    "sqlite_sql": "SELECT SUM(CASE WHEN Toss_Winner = ( SELECT Team_Id FROM Team WHERE Team_Name = 'Sunrisers Hyderabad' ) THEN 1 ELSE 0 END) FROM `Match`",
+    "dataverse_sql": "SELECT SUM(CASE WHEN [bird_soccer_toss_winner] = [bird_soccer_team_id] THEN 1 ELSE 0 END) FROM [bird_soccer_match] CROSS JOIN [bird_soccer_team] WHERE [bird_soccer_team_name] = 'Sunrisers Hyderabad'",
+    "patterns": [
+      "join",
+      "case",
+      "aggregate"
+    ]
+  },
+  {
+    "question_id": 20,
+    "source_index": 1807,
+    "question": "Give the name of the striker in the match no. 419169, over no.3, ball no.2, inning no.2.",
+    "sqlite_sql": "SELECT T2.Player_Name FROM Ball_by_Ball AS T1 INNER JOIN Player AS T2 ON T1.Striker = T2.Player_Id WHERE T1.Match_Id = 419169 AND T1.Over_Id = 3 AND T1.Ball_Id = 2 AND T1.Innings_No = 2",
+    "dataverse_sql": "SELECT [T2].[bird_soccer_player_name] FROM [bird_soccer_ball_by_ball] AS [T1] INNER JOIN [bird_soccer_player] AS [T2] ON [T1].[bird_soccer_striker] = [T2].[bird_soccer_player_id] WHERE [T1].[bird_soccer_match_id] = 419169 AND [T1].[bird_soccer_over_id] = 3 AND [T1].[bird_soccer_ball_id] = 2 AND [T1].[bird_soccer_innings_no] = 2",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 21,
+    "source_index": 1808,
+    "question": "Give the name of venue for the game with a win margin of 138 points.",
+    "sqlite_sql": "SELECT T2.Venue_Name FROM `Match` AS T1 INNER JOIN Venue AS T2 ON T1.Venue_Id = T2.Venue_Id WHERE T1.Win_Margin = 138",
+    "dataverse_sql": "SELECT [T2].[bird_soccer_venue_name] FROM [bird_soccer_match] AS [T1] INNER JOIN [bird_soccer_venue] AS [T2] ON [T1].[bird_soccer_venue_id] = [T2].[bird_soccer_venue_id] WHERE [T1].[bird_soccer_win_margin] = 138",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 22,
+    "source_index": 1809,
+    "question": "For the game on 2008/5/12, who was the man of the match?",
+    "sqlite_sql": "SELECT T1.Player_Name FROM Player AS T1 INNER JOIN Match AS T2 ON T1.Player_Id = T2.Man_of_the_Match WHERE T2.Match_Date = '2008-05-12'",
+    "dataverse_sql": "SELECT [T1].[bird_soccer_player_name] FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_match] AS [T2] ON [T1].[bird_soccer_player_id] = [T2].[bird_soccer_man_of_the_match] WHERE [T2].[bird_soccer_match_date] = '2008-05-12'",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 23,
+    "source_index": 1810,
+    "question": "State the name of captain keeper of the match no.419117.",
+    "sqlite_sql": "SELECT T3.Player_Name FROM Player_Match AS T1 INNER JOIN Rolee AS T2 ON T1.Role_Id = T2.Role_Id INNER JOIN Player AS T3 ON T1.Player_Id = T3.Player_Id WHERE T1.Match_Id = '419117' AND T2.Role_Desc = 'CaptainKeeper'",
+    "dataverse_sql": "SELECT [T3].[bird_soccer_player_name] FROM [bird_soccer_player_match] AS [T1] INNER JOIN [bird_soccer_rolee] AS [T2] ON [T1].[bird_soccer_role_id] = [T2].[bird_soccer_role_id] INNER JOIN [bird_soccer_player] AS [T3] ON [T1].[bird_soccer_player_id] = [T3].[bird_soccer_player_id] WHERE [T1].[bird_soccer_match_id] = '419117' AND [T2].[bird_soccer_role_desc] = 'CaptainKeeper'",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 24,
+    "source_index": 1811,
+    "question": "Who was the man of the series in 2013? Give the full name.",
+    "sqlite_sql": "SELECT T2.Player_Name FROM Season AS T1 INNER JOIN Player AS T2 ON T1.Man_of_the_Series = T2.Player_Id WHERE T1.Season_Year = 2013",
+    "dataverse_sql": "SELECT [T2].[bird_soccer_player_name] FROM [bird_soccer_season] AS [T1] INNER JOIN [bird_soccer_player] AS [T2] ON [T1].[bird_soccer_man_of_the_series] = [T2].[bird_soccer_player_id] WHERE [T1].[bird_soccer_season_year] = 2013",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 25,
+    "source_index": 1812,
+    "question": "Give the date of birth of the 2014 Orange Cap winner.",
+    "sqlite_sql": "SELECT T2.DOB FROM Season AS T1 INNER JOIN Player AS T2 ON T1.Man_of_the_Series = T2.Player_Id WHERE T1.Season_Year = 2014 AND T1.Orange_Cap IS NOT NULL",
+    "dataverse_sql": "SELECT [T2].[bird_soccer_dob] FROM [bird_soccer_season] AS [T1] INNER JOIN [bird_soccer_player] AS [T2] ON [T1].[bird_soccer_man_of_the_series] = [T2].[bird_soccer_player_id] WHERE [T1].[bird_soccer_season_year] = 2014 AND NOT [T1].[bird_soccer_orange_cap] IS NULL",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 26,
+    "source_index": 1813,
+    "question": "What is the nationality of the 7th season Purple Cap winner?",
+    "sqlite_sql": "SELECT T3.Country_Name FROM Season AS T1 INNER JOIN Player AS T2 ON T1.Man_of_the_Series = T2.Player_Id INNER JOIN Country AS T3 ON T2.Country_Name = T3.Country_Id WHERE T1.Season_Id = 7 AND T1.Purple_Cap IS NOT NULL",
+    "dataverse_sql": "SELECT [T3].[bird_soccer_country_name] FROM [bird_soccer_season] AS [T1] INNER JOIN [bird_soccer_player] AS [T2] ON [T1].[bird_soccer_man_of_the_series] = [T2].[bird_soccer_player_id] INNER JOIN [bird_soccer_country] AS [T3] ON [T2].[bird_soccer_country_name] = [T3].[bird_soccer_country_id] WHERE [T1].[bird_soccer_season_id] = 7 AND NOT [T1].[bird_soccer_purple_cap] IS NULL",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 27,
+    "source_index": 1814,
+    "question": "Which country does Ranchi city belong to?",
+    "sqlite_sql": "SELECT T2.Country_Name FROM City AS T1 INNER JOIN Country AS T2 ON T1.Country_Id = T2.Country_Id WHERE T1.City_Name = 'Ranchi'",
+    "dataverse_sql": "SELECT [T2].[bird_soccer_country_name] FROM [bird_soccer_city] AS [T1] INNER JOIN [bird_soccer_country] AS [T2] ON [T1].[bird_soccer_country_id] = [T2].[bird_soccer_country_id] WHERE [T1].[bird_soccer_city_name] = 'Ranchi'",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 28,
+    "source_index": 1815,
+    "question": "How many Indian cities are there in the database?",
+    "sqlite_sql": "SELECT SUM(CASE WHEN T2.Country_Name = 'India' THEN 1 ELSE 0 END) FROM City AS T1 INNER JOIN Country AS T2 ON T1.Country_Id = T2.Country_Id",
+    "dataverse_sql": "SELECT SUM(CASE WHEN [T2].[bird_soccer_country_name] = 'India' THEN 1 ELSE 0 END) FROM [bird_soccer_city] AS [T1] INNER JOIN [bird_soccer_country] AS [T2] ON [T1].[bird_soccer_country_id] = [T2].[bird_soccer_country_id]",
+    "patterns": [
+      "join",
+      "case",
+      "aggregate"
+    ]
+  },
+  {
+    "question_id": 29,
+    "source_index": 1816,
+    "question": "State the name of the city with the most venues.",
+    "sqlite_sql": "SELECT T1.City_Name FROM City AS T1 INNER JOIN Venue AS T2 ON T1.City_Id = T2.City_Id GROUP BY T1.City_Id ORDER BY COUNT(T2.Venue_Id) DESC LIMIT 1",
+    "dataverse_sql": "SELECT TOP 1 [T1].[bird_soccer_city_name] FROM [bird_soccer_city] AS [T1] INNER JOIN [bird_soccer_venue] AS [T2] ON [T1].[bird_soccer_city_id] = [T2].[bird_soccer_city_id] GROUP BY [T1].[bird_soccer_city_id], [T1].[bird_soccer_city_name] ORDER BY COUNT([T2].[bird_soccer_venue_id]) DESC",
+    "patterns": [
+      "join",
+      "group_by",
+      "top",
+      "subquery"
+    ]
+  },
+  {
+    "question_id": 30,
+    "source_index": 1817,
+    "question": "What is the batting hand of MK Pandey?",
+    "sqlite_sql": "SELECT T2.Batting_hand FROM Player AS T1 INNER JOIN Batting_Style AS T2 ON T1.Batting_hand = T2.Batting_Id WHERE T1.Player_Name = 'MK Pandey'",
+    "dataverse_sql": "SELECT [T2].[bird_soccer_batting_hand] FROM [bird_soccer_player] AS [T1] INNER JOIN [bird_soccer_batting_style] AS [T2] ON [T1].[bird_soccer_batting_hand] = [T2].[bird_soccer_batting_id] WHERE [T1].[bird_soccer_player_name] = 'MK Pandey'",
+    "patterns": [
+      "join"
+    ]
+  },
+  {
+    "question_id": 31,
+    "source_index": 1818,
+    "question": "In the database, how many times is the number of Indian cities to the South African cities?",
+    "sqlite_sql": "SELECT CAST(SUM(CASE WHEN T2.Country_Name = 'India' THEN 1 ELSE 0 END) AS REAL) / SUM(CASE WHEN T2.Country_Name = 'South Africa' THEN 1 ELSE 0 END) FROM City AS T1 INNER JOIN Country AS T2 ON T1.Country_Id = T2.Country_Id",
+    "dataverse_sql": "SELECT CAST(SUM(CASE WHEN [T2].[bird_soccer_country_name] = 'India' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(SUM(CASE WHEN [T2].[bird_soccer_country_name] = 'South Africa' THEN 1 ELSE 0 END), 0) FROM [bird_soccer_city] AS [T1] INNER JOIN [bird_soccer_country] AS [T2] ON [T1].[bird_soccer_country_id] = [T2].[bird_soccer_country_id]",
+    "patterns": [
+      "join",
+      "case",
+      "aggregate"
+    ]
+  },
+  {
+    "question_id": 32,
+    "source_index": 1819,
+    "question": "How many times does M Chinnaswamy Stadium host games than Maharashtra Cricket Association Stadium?",
+    "sqlite_sql": "SELECT SUM(CASE WHEN T2.Venue_Name = 'M Chinnaswamy Stadium' THEN 1 ELSE 0 END) - SUM(CASE WHEN T2.Venue_Name = 'Maharashtra Cricket Association Stadium' THEN 1 ELSE 0 END) FROM `Match` AS T1 INNER JOIN Venue AS T2 ON T1.Venue_Id = T2.Venue_Id",
+    "dataverse_sql": "SELECT SUM(CASE WHEN [T2].[bird_soccer_venue_name] = 'M Chinnaswamy Stadium' THEN 1 ELSE 0 END) - SUM(CASE WHEN [T2].[bird_soccer_venue_name] = 'Maharashtra Cricket Association Stadium' THEN 1 ELSE 0 END) FROM [bird_soccer_match] AS [T1] INNER JOIN [bird_soccer_venue] AS [T2] ON [T1].[bird_soccer_venue_id] = [T2].[bird_soccer_venue_id]",
+    "patterns": [
+      "join",
+      "case",
+      "aggregate"
+    ]
+  },
+  {
+    "question_id": 33,
+    "source_index": 1820,
+    "question": "Who is the oldest player?",
+    "sqlite_sql": "SELECT Player_Name FROM Player ORDER BY DOB ASC LIMIT 1",
+    "dataverse_sql": "SELECT TOP 1 [bird_soccer_player_name] FROM [bird_soccer_player] ORDER BY [bird_soccer_dob] ASC",
+    "patterns": [
+      "top",
+      "subquery"
+    ]
+  },
+  {
+    "question_id": 34,
+    "source_index": 1821,
+    "question": "How many matches were played on May 2008?",
+    "sqlite_sql": "SELECT SUM(CASE WHEN SUBSTR(Match_Date, 7, 1) = '5' THEN 1 ELSE 0 END) FROM `Match` WHERE SUBSTR(Match_Date, 1, 4) = '2008'",
+    "dataverse_sql": "SELECT SUM(CASE WHEN DATEPART(month, [bird_soccer_match_date]) = '5' THEN 1 ELSE 0 END) FROM [bird_soccer_match] WHERE DATEPART(year, [bird_soccer_match_date]) = '2008'",
+    "patterns": [
+      "date",
+      "case",
+      "aggregate"
+    ]
+  },
+  {
+    "question_id": 35,
+    "source_index": 1822,
+    "question": "How many players were born in the 90s?",
+    "sqlite_sql": "SELECT COUNT(Player_Id) AS cnt FROM Player WHERE DOB BETWEEN '1990-01-01' AND '1999-12-31'",
+    "dataverse_sql": "SELECT COUNT([bird_soccer_player_id]) AS [cnt] FROM [bird_soccer_player] WHERE [bird_soccer_dob] BETWEEN '1990-01-01' AND '1999-12-31'",
+    "patterns": [
+      "simple"
+    ]
+  },
+  {
+    "question_id": 36,
+    "source_index": 1823,
+    "question": "How many matches did Team 10 play in 2012?",
+    "sqlite_sql": "SELECT SUM(CASE WHEN Team_1 = 10 OR Team_2 = 10 THEN 1 ELSE 0 END) FROM `Match` WHERE SUBSTR(Match_Date, 1, 4) = '2012'",
+    "dataverse_sql": "SELECT SUM(CASE WHEN [bird_soccer_team_1] = 10 OR [bird_soccer_team_2] = 10 THEN 1 ELSE 0 END) FROM [bird_soccer_match] WHERE DATEPART(year, [bird_soccer_match_date]) = '2012'",
+    "patterns": [
+      "date",
+      "case",
+      "aggregate"
+    ]
+  },
+  {
+    "question_id": 37,
+    "source_index": 1824,
+    "question": "List the id of the player who won the Orange Cap for 2 consecutive seasons.",
+    "sqlite_sql": "SELECT Orange_Cap FROM Season GROUP BY Orange_Cap HAVING COUNT(Season_Year) > 1",
+    "dataverse_sql": "SELECT [bird_soccer_orange_cap] FROM [bird_soccer_season] GROUP BY [bird_soccer_orange_cap] HAVING COUNT([bird_soccer_season_year]) > 1",
+    "patterns": [
+      "group_by"
+    ]
+  },
+  {
+    "question_id": 38,
+    "source_index": 1825,
+    "question": "How many matches were played in Season 7?",
+    "sqlite_sql": "SELECT COUNT(Match_Id) FROM `Match` WHERE Season_Id = 7",
+    "dataverse_sql": "SELECT COUNT([bird_soccer_match_id]) FROM [bird_soccer_match] WHERE [bird_soccer_season_id] = 7",
+    "patterns": [
+      "simple"
+    ]
+  },
+  {
+    "question_id": 39,
+    "source_index": 1826,
+    "question": "How many umpires are from South Africa?",
+    "sqlite_sql": "SELECT SUM(CASE WHEN T1.Country_Name = 'South Africa' THEN 1 ELSE 0 END) FROM Country AS T1 INNER JOIN Umpire AS T2 ON T1.Country_ID = T2.Umpire_Country",
+    "dataverse_sql": "SELECT SUM(CASE WHEN [T1].[bird_soccer_country_name] = 'South Africa' THEN 1 ELSE 0 END) FROM [bird_soccer_country] AS [T1] INNER JOIN [bird_soccer_umpire] AS [T2] ON [T1].[bird_soccer_country_id] = [T2].[bird_soccer_umpire_country]",
+    "patterns": [
+      "join",
+      "case",
+      "aggregate"
+    ]
+  }
+]
